@@ -1,0 +1,35 @@
+# Dependencies and package-manager caches
+node_modules/
+.pnpm-store/
+
+# Build output and TypeScript incremental state
+/dist/
+*.tsbuildinfo
+
+# Test output
+/coverage/
+/.nyc_output/
+
+
+
+# Runtime logs and temporary files
+/logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+/tmp/
+/temp/
+/.cache/
+
+# Local editor state
+.idea/
+.vscode/*.local.json
+*.swp
+*.swo
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Keep pnpm-lock.yaml, source, tests, documentation, and .env.example tracked.
