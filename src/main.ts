@@ -7,4 +7,9 @@ async function bootstrap() {
   app.enableCors();
   await app.listen(process.env.PORT ?? 3000);
 }
-await bootstrap();
+// Vercel captures listen() during module loading and starts the server afterward.
+// Awaiting bootstrap at module scope would block that startup sequence.
+void bootstrap().catch((error: unknown) => {
+  console.error('Failed to start server', error);
+  process.exitCode = 1;
+});
