@@ -2,8 +2,10 @@
 
 项目使用 `vercel.json` 显式声明 `@vercel/node` 构建器，以 `src/main.ts` 为函数入口。
 `vercel-build` 复用 `pnpm run build`，所有请求路由到同一 server。
-入口初始化 REST 和 Socket.IO，调用非阻塞 `listen()` 供运行时捕获原始 HTTP server。
-不要在模块顶层等待 `app.listen()`，也不要用仅处理 REST 的 Express handler 替换 server。
+入口初始化 REST 和 Socket.IO，直接调用原始 HTTP server 的同步 `listen()`
+供运行时捕获。不要在模块顶层等待 `app.listen()`，也不要用仅处理 REST 的
+Express handler 替换 server。入口输出 `[startup]` 阶段日志，方便区分
+Nest 创建、路由初始化与 listen 捕获；创建失败向加载器抛出异常，避免直接退出进程。
 
 ## 必需的部署文件
 
