@@ -1,15 +1,27 @@
 import { NestFactory } from '@nestjs/core';
+import { IoAdapter } from '@nestjs/platform-socket.io';
+// Keep Nest's optional gateway module visible to deployment file tracing.
+import '@nestjs/websockets/socket-module.js';
+import type { Server } from 'node:http';
 import { AppModule } from './app.module.js';
+import { BangocatGateway } from './bangocat/bangocat.gateway.js';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  // 允许前端跨域联调（REST 与 WebSocket 均放开）
-  app.enableCors();
-  await app.listen(process.env.PORT ?? 3000);
+const app = await NestFactory.create(AppModule);
+app.enableCors();
+app.useWebSocketAdapter(new IoAdapter(app));
+await app.init();
+
+if (!app.get(BangocatGateway).server) {
+  throw new Error('Socket.IO gateway was not initialized');
 }
-// Vercel captures listen() during module loading and starts the server afterward.
-// Awaiting bootstrap at module scope would block that startup sequence.
-void bootstrap().catch((error: unknown) => {
-  console.error('Failed to start server', error);
-  process.exitCode = 1;
-});
+
+// Export the original server, including its Socket.IO request/upgrade listeners.
+const server: Server = app.getHttpServer();
+export default server;
+
+if (process.env.VERCEL !== '1') {
+  void app.listen(process.env.PORT ?? 3000).catch((error: unknown) => {
+    console.error('Failed to start server', error);
+    process.exitCode = 1;
+  });
+}
