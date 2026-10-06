@@ -1,6 +1,19 @@
 import { execFileSync } from 'node:child_process';
+import { globSync, readFileSync } from 'node:fs';
 
 describe('Vercel server entrypoint (e2e)', () => {
+  it('explicitly includes the optional gateway module in the deployment', () => {
+    const config = JSON.parse(readFileSync('vercel.json', 'utf8'));
+    const files = globSync(config.functions['src/main.ts'].includeFiles);
+    expect(
+      files.some((file) =>
+        file
+          .replaceAll('\\', '/')
+          .endsWith('/@nestjs/websockets/socket-module.js'),
+      ),
+    ).toBe(true);
+  });
+
   beforeAll(() => {
     execFileSync(
       process.execPath,

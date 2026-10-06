@@ -2,5 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nestjs",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run build"
+  "buildCommand": "pnpm run build",
+  "functions": {
+    "src/main.ts": {
+      "includeFiles": "node_modules/{@nestjs/websockets,.pnpm/@nestjs+websockets@*/node_modules/@nestjs/websockets}/**"
+    }
+  }
 }
