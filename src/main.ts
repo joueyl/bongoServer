@@ -19,9 +19,9 @@ if (!app.get(BangocatGateway).server) {
 const server: Server = app.getHttpServer();
 export default server;
 
-if (process.env.VERCEL !== '1') {
-  void app.listen(process.env.PORT ?? 3000).catch((error: unknown) => {
-    console.error('Failed to start server', error);
-    process.exitCode = 1;
-  });
-}
+// Vercel captures listen() to discover this server, then binds its own port.
+// Do not await this promise at module scope: the capture does not run its callback.
+void app.listen(process.env.PORT ?? 3000).catch((error: unknown) => {
+  console.error('Failed to start server', error);
+  process.exitCode = 1;
+});

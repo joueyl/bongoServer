@@ -16,11 +16,21 @@ describe('Vercel server entrypoint (e2e)', () => {
   it('exports an initialized HTTP server with REST and WebSocket handlers', () => {
     const script = `
       import assert from 'node:assert/strict';
-      import { Server } from 'node:http';
+      import http, { Server } from 'node:http';
       import { io } from 'socket.io-client';
 
+      // Match Vercel's listen capture while importing the application.
+      const originalListen = http.Server.prototype.listen;
+      let captured;
+      http.Server.prototype.listen = function () {
+        captured = this;
+        http.Server.prototype.listen = originalListen;
+        return this;
+      };
       const { default: server } = await import('./dist/main.js');
+      http.Server.prototype.listen = originalListen;
       assert.ok(server instanceof Server, 'entrypoint must export the HTTP server');
+      assert.equal(captured, server, 'Vercel must capture the initialized HTTP server');
       assert.equal(server.listening, false, 'Vercel owns the listening socket');
       await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
       const base = 'http://127.0.0.1:' + server.address().port;
