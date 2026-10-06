@@ -1,6 +1,7 @@
 # Vercel 部署与连接验证
 
-项目使用 `vercel.json` 的 NestJS preset，以 `src/main.ts` 为函数入口。
+项目使用 `vercel.json` 显式声明 `@vercel/node` 构建器，以 `src/main.ts` 为函数入口。
+`vercel-build` 复用 `pnpm run build`，所有请求路由到同一 server。
 入口初始化 REST 和 Socket.IO，调用非阻塞 `listen()` 供运行时捕获原始 HTTP server。
 不要在模块顶层等待 `app.listen()`，也不要用仅处理 REST 的 Express handler 替换 server。
 
@@ -8,11 +9,15 @@
 
 Nest 的网关模块包含动态加载。2026-10-07 的运行日志确认部署包缺少
 `node_modules/@nestjs/websockets/socket-module.js`，导致启动时 `ERR_MODULE_NOT_FOUND`。
-因此 `functions["src/main.ts"].includeFiles` 显式包含整个 WebSocket package，
+因此 `builds[0].config.includeFiles` 显式包含整个 WebSocket package，
 同时匹配普通 node_modules 路径与 pnpm 的 `.pnpm` 实际存储路径。
 静态导入和本地启动成功不能单独证明云端部署包完整。
 
-配置依据：[Vercel includeFiles](https://vercel.com/docs/project-configuration/vercel-json)。
+Vercel CLI 62.1.0 已拒绝 `functions["src/main.ts"]`，因为该配置只匹配 `api` 下的函数。
+这里使用文档仍支持的显式 `builds`，不再混用 `functions` 或 framework preset。
+它属于 legacy 配置；若未来迁移到 `api` 函数入口，应同时迁移路由、包含规则与回归测试。
+构建器精确固定到经 npm registry 核对的 21.0.0，未加入应用运行依赖。
+配置依据：[Vercel builds](https://vercel.com/docs/project-configuration/vercel-json#builds)。
 
 ## 验证
 

@@ -4,7 +4,13 @@ import { globSync, readFileSync } from 'node:fs';
 describe('Vercel server entrypoint (e2e)', () => {
   it('explicitly includes the optional gateway module in the deployment', () => {
     const config = JSON.parse(readFileSync('vercel.json', 'utf8'));
-    const files = globSync(config.functions['src/main.ts'].includeFiles);
+    expect(config.functions).toBeUndefined();
+    const build = config.builds.find(
+      (entry: { src: string }) => entry.src === 'src/main.ts',
+    );
+    expect(build.use).toBe('@vercel/node@21.0.0');
+    expect(config.routes).toEqual([{ src: '/(.*)', dest: '/src/main.ts' }]);
+    const files = globSync(build.config.includeFiles);
     expect(
       files.some((file) =>
         file
