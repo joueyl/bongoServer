@@ -64,7 +64,7 @@ export class BangocatRoomService {
     };
   }
 
-  createRoom(clientId: string, dto: CreateRoomDto): Ack<{ room: BangocatRoomView }> {
+  createRoom(clientId: string, dto: CreateRoomDto): Ack<{ room: BangocatRoomView; memberId: string }> {
     if (this.findRoomByClient(clientId)) {
       return err('已经在房间中，请先退出当前房间');
     }
@@ -88,10 +88,10 @@ export class BangocatRoomService {
     });
     this.rooms.set(roomId, room);
     this.server?.in(clientId).socketsJoin(this.roomKey(roomId));
-    return ok({ room: this.toView(room) });
+    return ok({ room: this.toView(room), memberId: clientId });
   }
 
-  joinRoom(clientId: string, dto: JoinRoomDto): Ack<{ room: BangocatRoomView }> {
+  joinRoom(clientId: string, dto: JoinRoomDto): Ack<{ room: BangocatRoomView; memberId: string }> {
     if (this.findRoomByClient(clientId)) {
       return err('已经在房间中，请先退出当前房间');
     }
@@ -121,7 +121,7 @@ export class BangocatRoomService {
         roomId: room.id,
         member: this.toMemberView(room, member),
       });
-    return ok({ room: this.toView(room) });
+    return ok({ room: this.toView(room), memberId: clientId });
   }
 
   leaveRoom(clientId: string): Ack<{ roomId: string }> {

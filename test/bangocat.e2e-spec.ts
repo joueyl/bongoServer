@@ -81,6 +81,39 @@ describe('Bangocat 房间流程 (e2e)', () => {
     await app.close();
   });
 
+  it('省略昵称自动生成，并在加入响应中返回准确的成员身份', async () => {
+    const host = await connect();
+    const guest = await connect();
+    try {
+      const created = await ack(host, BangocatEvents.ROOM_CREATE, {
+        roomName: '匿名测试',
+      });
+      expect(created.ok).toBe(true);
+      expect(created.memberId).toBe(host.id);
+      const hostMember = created.room.members.find(
+        (member: any) => member.id === host.id,
+      );
+      expect(hostMember.name).toBe(`匿名用户-${host.id!.slice(-4)}`);
+      const joined = await ack(guest, BangocatEvents.ROOM_JOIN, {
+        roomId: created.room.roomId,
+      });
+      expect(joined.ok).toBe(true);
+      expect(joined.memberId).toBe(guest.id);
+      const guestMember = joined.room.members.find(
+        (member: any) => member.id === guest.id,
+      );
+      expect(guestMember.name).toBe(`匿名用户-${guest.id!.slice(-4)}`);
+      const received = nextEvent(host, BangocatEvents.CHAT);
+      expect(
+        (await ack(guest, BangocatEvents.ROOM_CHAT, { content: '你好' })).ok,
+      ).toBe(true);
+      expect((await received).fromId).toBe(guest.id);
+    } finally {
+      host.disconnect();
+      guest.disconnect();
+    }
+  });
+
   it('创建→密码校验→加入→聊天→模型更新→P2P信令→踢人→房主接任', async () => {
     const host = await connect();
     const alice = await connect();

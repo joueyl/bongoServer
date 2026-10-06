@@ -93,8 +93,8 @@ Socket.IO 在线路协议中把回执参数封装在数组里。JavaScript 客�
 
 | 事件 | payload | 成功回执的业务字段 |
 | --- | --- | --- |
-| `room:create` | `{ name?, roomName?, password?, model? }` | `{ room }` |
-| `room:join` | `{ roomId, name?, password?, model? }` | `{ room }` |
+| `room:create` | `{ name?, roomName?, password?, model? }` | `{ room, memberId }` |
+| `room:join` | `{ roomId, name?, password?, model? }` | `{ room, memberId }` |
 | `room:leave` | 可省略 | `{ roomId }` |
 | `room:state` | 可省略 | `{ room }` |
 | `room:kick` | `{ memberId }` | `{ roomId }` |
@@ -105,6 +105,7 @@ Socket.IO 在线路协议中把回执参数封装在数组里。JavaScript 客�
 ### 创建 / 加入
 
 - `name` 可省略；提供时须为长度 `1–24` 的字符串。服务端去掉两端空白，缺省或 trim 后为空时使用 `匿名用户-<连接ID末4位>`。
+- 创建/加入成功时 `memberId` 为发起请求的 namespace socket ID；客户端用它匹配 `room.members` 中的自己，不用昵称判断身份。昵称允许重名，自动昵称只在当前连接期间使用。
 - `roomName` 可省略；提供时长度 `1–24`，trim 后为空或缺省时使用房间号。
 - 创建时 `password` 可省略，表示无密码；提供时长度 `1–32`，不要传空字符串表示无密码。
 - 加入时 `roomId` 长度 `1–64`，服务端 trim 后转为大写查找。密码房间必须提供与原密码完全一致的 `password`，密码不进行 trim。
@@ -164,6 +165,8 @@ Socket.IO 在线路协议中把回执参数封装在数组里。JavaScript 客�
 广播可能先于对应请求的回执到达，应提前安装监听；成员按 ID 合并，避免重复记录。
 
 ## 5. 完整房间结构
+
+创建/加入的成功响应同时包含 `memberId`（当前连接 ID）；`room:state` 仍只返回房间视图。
 
 ```json
 {
