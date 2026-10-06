@@ -16,7 +16,11 @@ Nest 的网关模块包含动态加载。2026-10-07 的运行日志确认部署�
 Vercel CLI 62.1.0 已拒绝 `functions["src/main.ts"]`，因为该配置只匹配 `api` 下的函数。
 这里使用文档仍支持的显式 `builds`，不再混用 `functions` 或 framework preset。
 它属于 legacy 配置；若未来迁移到 `api` 函数入口，应同时迁移路由、包含规则与回归测试。
-构建器精确固定到经 npm registry 核对的 21.0.0，未加入应用运行依赖。
+构建器精确固定到 Vercel CLI 62.1.0 自身使用的 `@vercel/node@17.0.0`，
+其 peer dependency `@vercel/build-utils@14.14.0` 与该 CLI 一致。
+`@vercel/node@21.0.0` 要求 14.18.0，会在该 CLI 的构建器安装阶段触发 `ERESOLVE`。
+版本已通过 npm registry 核对；构建器未加入应用运行依赖，不用 `--force`
+或 `--legacy-peer-deps` 绕过冲突。升级时需一起核对 CLI 与构建器的依赖版本。
 配置依据：[Vercel builds](https://vercel.com/docs/project-configuration/vercel-json#builds)。
 
 ## 验证

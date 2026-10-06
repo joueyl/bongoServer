@@ -3,7 +3,7 @@
   "builds": [
     {
       "src": "src/main.ts",
-      "use": "@vercel/node@21.0.0",
+      "use": "@vercel/node@17.0.0",
       "config": {
         "includeFiles": [
           "node_modules/@nestjs/websockets/**",
