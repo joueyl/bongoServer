@@ -10,7 +10,9 @@
 Nest 的网关模块包含动态加载。2026-10-07 的运行日志确认部署包缺少
 `node_modules/@nestjs/websockets/socket-module.js`，导致启动时 `ERR_MODULE_NOT_FOUND`。
 因此 `builds[0].config.includeFiles` 显式包含整个 WebSocket package，
-同时匹配普通 node_modules 路径与 pnpm 的 `.pnpm` 实际存储路径。
+项目固定使用 `pnpm@9.15.9`，通过 `.npmrc` 的 `node-linker=hoisted`
+生成真实的依赖目录。包含规则只匹配该目录，不再同时打包 pnpm 链接路径
+和 `.pnpm` 目标路径，避免函数包存在符号链接目录与其下文件的冲突。
 静态导入和本地启动成功不能单独证明云端部署包完整。
 
 Vercel CLI 62.1.0 已拒绝 `functions["src/main.ts"]`，因为该配置只匹配 `api` 下的函数。

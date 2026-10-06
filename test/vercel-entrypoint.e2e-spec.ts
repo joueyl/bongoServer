@@ -9,6 +9,13 @@ describe('Vercel server entrypoint (e2e)', () => {
       (entry: { src: string }) => entry.src === 'src/main.ts',
     );
     expect(build.use).toBe('@vercel/node@17.0.0');
+    expect(build.config.includeFiles).toEqual([
+      'node_modules/@nestjs/websockets/**',
+    ]);
+    expect(readFileSync('.npmrc', 'utf8')).toContain('node-linker=hoisted');
+    expect(
+      JSON.parse(readFileSync('package.json', 'utf8')).packageManager,
+    ).toBe('pnpm@9.15.9');
     expect(config.routes).toEqual([{ src: '/(.*)', dest: '/src/main.ts' }]);
     const files = globSync(build.config.includeFiles);
     expect(
