@@ -5,7 +5,12 @@
       "src": "src/main.ts",
       "use": "@vercel/node@17.0.0",
       "config": {
-        "includeFiles": ["node_modules/@nestjs/websockets/**"]
+        "includeFiles": [
+          "node_modules/@nestjs/websockets/**",
+          "node_modules/iterare/**",
+          "node_modules/object-hash/**",
+          "node_modules/tslib/**"
+        ]
       }
     }
   ],

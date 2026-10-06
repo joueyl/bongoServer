@@ -11,7 +11,23 @@ describe('Vercel server entrypoint (e2e)', () => {
     expect(build.use).toBe('@vercel/node@17.0.0');
     expect(build.config.includeFiles).toEqual([
       'node_modules/@nestjs/websockets/**',
+      'node_modules/iterare/**',
+      'node_modules/object-hash/**',
+      'node_modules/tslib/**',
     ]);
+    const checked = new Set<string>();
+    const checkDependencies = (name: string) => {
+      if (checked.has(name)) return;
+      checked.add(name);
+      expect(build.config.includeFiles).toContain(`node_modules/${name}/**`);
+      const manifest = JSON.parse(
+        readFileSync(`node_modules/${name}/package.json`, 'utf8'),
+      );
+      for (const dependency of Object.keys(manifest.dependencies ?? {})) {
+        checkDependencies(dependency);
+      }
+    };
+    checkDependencies('@nestjs/websockets');
     expect(readFileSync('.npmrc', 'utf8')).toContain('node-linker=hoisted');
     expect(
       JSON.parse(readFileSync('package.json', 'utf8')).packageManager,

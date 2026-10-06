@@ -9,7 +9,10 @@
 
 Nest 的网关模块包含动态加载。2026-10-07 的运行日志确认部署包缺少
 `node_modules/@nestjs/websockets/socket-module.js`，导致启动时 `ERR_MODULE_NOT_FOUND`。
-因此 `builds[0].config.includeFiles` 显式包含整个 WebSocket package，
+因此 `builds[0].config.includeFiles` 显式包含整个 WebSocket package 及其
+运行依赖 `iterare`、`object-hash`、`tslib`。`includeFiles` 只复制匹配文件，
+不能依赖它递归追踪这些文件的 import；2026-10-07 的云端异常已确认
+仅包含 WebSocket package 会遗漏 `object-hash`。
 项目固定使用 `pnpm@9.15.9`，通过 `.npmrc` 的 `node-linker=hoisted`
 生成真实的依赖目录。包含规则只匹配该目录，不再同时打包 pnpm 链接路径
 和 `.pnpm` 目标路径，避免函数包存在符号链接目录与其下文件的冲突。
